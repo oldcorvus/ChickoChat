@@ -14,6 +14,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 // represents a single template
@@ -26,7 +27,7 @@ type templateHandler struct {
 // ServeHTTP handles the HTTP request.
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("../templates", t.filename)))
+		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
 	})
 	t.templ.Execute(w, r)
 }
@@ -66,6 +67,9 @@ func main() {
 			panic(err)
 		}
 	}()
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		panic(err)
+	}
 
 	log.Printf("Database connection established")
 
