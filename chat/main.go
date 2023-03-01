@@ -2,6 +2,7 @@ package main
 
 import (
 	"chicko_chat/log"
+	"context"
 	"flag"
 	"log"
 	"net/http"
@@ -9,6 +10,10 @@ import (
 	"path/filepath"
 	"sync"
 	"text/template"
+	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // represents a single template
@@ -28,9 +33,43 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var addr = flag.String("addr", ":8080", "The addr of the application.")
+	mongoURI := flag.String("mongoURI", "mongodb://localhost:27017", "Database hostname url")
+	mongoDatabase := flag.String("mongoDatabase", "chicko_chat", "Database name")
+	enableCredentials := flag.Bool("enableCredentials", false, "Enable the use of credentials for mongo connection")
 	flag.Parse()
 
-	r := newRoom()
+	_ = mongoDatabase
+	// Create mongo client configuration
+	co := options.Client().ApplyURI(*mongoURI)
+	if *enableCredentials {
+		co.Auth = &options.Credential{
+			Username: os.Getenv("MONGODB_USERNAME"),
+			Password: os.Getenv("MONGODB_PASSWORD"),
+		}
+	}
+
+	// Establish database connection
+	client, err := mongo.NewClient(co)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	log.Printf("Database connection established")
+
+	r := NewRoom()
 	r.logger = logger.New(os.Stdout)
 
 	http.Handle("/", &templateHandler{filename: "chat.html"})

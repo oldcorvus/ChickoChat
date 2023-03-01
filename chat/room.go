@@ -68,7 +68,7 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	client.read()
 }
 
-func newRoom() *room {
+func NewRoom() *room {
 	return &room{
 		forward: make(chan []byte),
 		join:    make(chan *client),
