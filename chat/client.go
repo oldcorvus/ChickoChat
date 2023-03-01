@@ -1,6 +1,8 @@
 package main
 
 import (
+	"chicko_chat/log"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -12,7 +14,7 @@ type client struct {
 
 	room *room
 
-
+	logger logger.Logger
 }
 
 func (c *client) read() {

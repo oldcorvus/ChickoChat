@@ -8,7 +8,7 @@ import (
 
 // struct representing a user in a ChatRoom
 type Client struct {
-	Username     string    `json:"username"`
+	ID           string    `json:"username"`
 	Email        string    `json:"email" bson:"email"`
 	Name         string    `json:"name" bson:"name"`
 	Active       bool      `json:"active" bson:"active"`

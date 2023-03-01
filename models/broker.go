@@ -1,6 +1,6 @@
 package data
 
-// struct representing  the client connections
+// struct representing  client connections
 type Broker struct {
 	// Registered Clients.
 	Clients map[*Client]bool

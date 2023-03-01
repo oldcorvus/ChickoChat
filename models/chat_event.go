@@ -16,8 +16,8 @@ const (
 // struct representing a message event in an  ChatRoom
 type ChatEvent struct {
 	EventType string    `json:"event_type,omitempty"`
-	User      string    `json:"name,omitempty"`
-	RoomID    int       `json:"room_id,omitempty"`
+	UserID    string    `json:"name,omitempty"`
+	RoomID    string    `json:"room_id,omitempty"`
 	Message   string    `json:"msg,omitempty"`
 	Timestamp time.Time `json:"time,omitempty"`
 }

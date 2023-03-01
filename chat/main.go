@@ -1,9 +1,9 @@
 package main
 
 import (
+	"chicko_chat/log"
 	"flag"
 	"log"
-	"chicko_chat/log"
 	"net/http"
 	"os"
 	"path/filepath"
