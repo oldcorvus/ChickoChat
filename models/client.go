@@ -17,6 +17,4 @@ type Client struct {
 	Conn *websocket.Conn `json:"-"`
 	// Buffered channel of outbound messages.
 	Send chan []byte `json:"-"`
-	// ChatRoom that client is registered with
-	Room *ChatRoom `json:"-"`
 }

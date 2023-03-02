@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,18 +32,22 @@ func TestFindByEmail(t *testing.T) {
 	db := &ChatDatabase{
 		Users: client.Database("chicko_chat").Collection("users"),
 	}
+
 	//test for not existing email
 	res, err := db.FindByEmail("moelcrow@gmail.com")
 	if err == nil {
 		t.Fatalf("user found!")
 	}
+	_ = res
 
 	//adding user to databse
-	db.Users.InsertOne(context.TODO(), bson.D{{"email", "moelcrow@gmail.com"}})
+	db.Users.InsertOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
 
-	res, err = db.FindByEmail("moelcrow@gmail.com")
+	_, err = db.FindByEmail("moelcrow@gmail.com")
 	if err != nil {
 		t.Fatalf("error user not found")
 	}
+	// Delete record
+	db.Users.DeleteOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
 
 }
