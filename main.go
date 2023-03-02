@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chicko_chat/controllers"
 	"chicko_chat/database"
 	"chicko_chat/log"
 	"context"
@@ -9,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
 
 	"path/filepath"
 	"sync"
@@ -78,7 +81,7 @@ func main() {
 		Messages: client.Database("chicko_chat").Collection("messages"),
 		Rooms:    client.Database("chicko_chat").Collection("rooms"),
 	}
-	_ = db
+
 	res, err := db.FindByEmail("moelcrow@gmail.com")
 	fmt.Println(err, res)
 
@@ -90,6 +93,13 @@ func main() {
 	http.Handle("/", &templateHandler{filename: "chat.html"})
 	http.Handle("/room", r)
 
+	router := gin.Default()
+	controller := controllers.Controller{
+		DB: db,
+	}
+	router.POST("/start", controller.StartConversation) // new
+
+	router.Run()
 	go r.run()
 
 	// start the web server

@@ -18,24 +18,24 @@ type ChatDatabase struct {
 	Rooms *mongo.Collection
 }
 
-func (c *ChatDatabase) ConvertId(result *mongo.InsertOneResult)(string, error) {
+func (c *ChatDatabase) ConvertId(result *mongo.InsertOneResult)(primitive.ObjectID, error) {
 	if id, ok := result.InsertedID.(primitive.ObjectID); ok {
-		return id.Hex(), nil
+		return id, nil
 	} else {
 	
-		return "" , errors.New("failed vonverting")
+		return primitive.NilObjectID  , errors.New("failed vonverting")
 	}
 
 }
 
 
 // Add user to the databse
-func (c *ChatDatabase) AddUser(user *data.UserData) (string, error) {
+func (c *ChatDatabase) AddUser(user *data.UserData) (primitive.ObjectID, error) {
 
 	res, err := c.Users.InsertOne(context.TODO(), user)
 
 	if err != nil {
-		return "" , err
+		return primitive.NilObjectID , err
 	}
 
 	return c.ConvertId(res)
@@ -43,10 +43,10 @@ func (c *ChatDatabase) AddUser(user *data.UserData) (string, error) {
 }
 
 // FindByEmail will be used to find a new user registry by email
-func (c *ChatDatabase) FindByEmail(email string) (*data.Client, error) {
+func (c *ChatDatabase) FindByEmail(email string) (*data.UserData, error) {
 
 	// Find user by email
-	var user = data.Client{}
+	var user = data.UserData{}
 	err := c.Users.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
 
 	if err != nil {

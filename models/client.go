@@ -2,7 +2,7 @@ package data
 
 import (
 	"time"
-
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,7 +17,7 @@ type Client struct {
 }
 
 type UserData struct {
-	ID     string `json:"username"`
+	ID     primitive.ObjectID  `json:"_id" bson:"_id"`
 	Email  string `json:"email" bson:"email"`
 	Name   string `json:"name" bson:"name"`
 	Active bool   `json:"active" bson:"active"`

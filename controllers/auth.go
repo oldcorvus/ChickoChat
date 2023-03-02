@@ -1,8 +1,38 @@
 package controllers
 
-func LoginOrRegister(c *gin.Context) {  // Get model if exist
-	var user models.Client
-  
-	if err := models.DB.Where("id = ?", c.Param("id")).First(&book).Error; err != nil {
-	  c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
-	  return
+import (
+	"net/http"
+
+	"chicko_chat/database"
+	"chicko_chat/models"
+	"github.com/gin-gonic/gin"
+)
+
+type Controller struct {
+	DB *database.ChatDatabase
+}
+
+func (c *Controller) StartConversation(ctx *gin.Context) {
+	// Validate input
+	var user *data.UserData
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Search For existing user
+	usr, err := c.DB.FindByEmail(user.Email)
+	if err == nil {
+		ctx.JSON(http.StatusOK, gin.H{"data": usr})
+		return
+
+	}
+
+	id, err := c.DB.AddUser(user)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	}
+	user.ID = id
+	ctx.JSON(http.StatusOK, gin.H{"data": user})
+}
