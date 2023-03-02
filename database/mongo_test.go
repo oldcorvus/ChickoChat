@@ -10,11 +10,11 @@ import (
 func TestFindByEmail(t *testing.T) {
 	db := ConnectDatabseTest()
 	//test for not existing email
-	res, err := db.FindByEmail("moelcrow@gmail.com")
+	_, err := db.FindByEmail("moelcrow@gmail.com")
 	if err == nil {
 		t.Fatalf("user found!")
 	}
-	_ = res
+
 
 	//adding user to databse
 	db.Users.InsertOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
