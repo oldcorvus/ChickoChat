@@ -1,12 +1,15 @@
 package main
 
 import (
+	"chicko_chat/database"
 	"chicko_chat/log"
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+
 	"path/filepath"
 	"sync"
 	"text/template"
@@ -70,6 +73,14 @@ func main() {
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		panic(err)
 	}
+	db := &database.ChatDatabase{
+		Users:    client.Database("chicko_chat").Collection("users"),
+		Messages: client.Database("chicko_chat").Collection("messages"),
+		Rooms:    client.Database("chicko_chat").Collection("rooms"),
+	}
+	_ = db
+	res, err := db.FindByEmail("moelcrow@gmail.com")
+	fmt.Println(err, res)
 
 	log.Printf("Database connection established")
 

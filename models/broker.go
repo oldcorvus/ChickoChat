@@ -14,8 +14,6 @@ type Broker struct {
 	// Unregister requests from Clients.
 	leave chan *Client
 
-	logger logger.Logger
-
 	RoomID int
 }
 
