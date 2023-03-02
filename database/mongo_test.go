@@ -1,38 +1,14 @@
 package database
 
 import (
+	"chicko_chat/models"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"testing"
-	"time"
 )
 
 func TestFindByEmail(t *testing.T) {
-
-	// Create mongo client configuration
-	co := options.Client().ApplyURI("mongodb://localhost:27017")
-
-	// Establish database connection
-	client, err := mongo.NewClient(co)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db := &ChatDatabase{
-		Users: client.Database("chicko_chat").Collection("users"),
-	}
-
+	db := ConnectDatabseTest()
 	//test for not existing email
 	res, err := db.FindByEmail("moelcrow@gmail.com")
 	if err == nil {
@@ -49,5 +25,27 @@ func TestFindByEmail(t *testing.T) {
 	}
 	// Delete record
 	db.Users.DeleteOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
+
+}
+
+func TestAddUser(t *testing.T) {
+	db := ConnectDatabseTest()
+	user := &data.UserData{
+		Email:  "testregister@gmail.com",
+		Name:   "test user",
+		Active: true,
+	}
+
+	_, err := db.AddUser(user)
+
+	if err != nil {
+		t.Fatalf("failure in adding user data to databse")
+	}
+	var usr = data.UserData{}
+	res := db.Users.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&usr)
+
+	if res != nil {
+		t.Fatalf("failure finding added user ")
+	}
 
 }
