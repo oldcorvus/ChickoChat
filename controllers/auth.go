@@ -3,14 +3,11 @@ package controllers
 import (
 	"net/http"
 
-	"chicko_chat/database"
 	"chicko_chat/models"
 	"github.com/gin-gonic/gin"
 )
 
-type Controller struct {
-	DB *database.ChatDatabase
-}
+
 
 func (c *Controller) StartConversation(ctx *gin.Context) {
 	// Validate input
