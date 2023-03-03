@@ -31,8 +31,10 @@ func (c *Controller) StartConversation(ctx *gin.Context) {
 	id, err := c.DB.AddUser(user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 
 	}
 	user.ID = id
 	ctx.JSON(http.StatusOK, gin.H{"data": user})
+
 }

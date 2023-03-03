@@ -2,8 +2,9 @@ package data
 
 import (
 	"time"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // struct representing a user in a ChatRoom
@@ -17,8 +18,8 @@ type Client struct {
 }
 
 type UserData struct {
-	ID     primitive.ObjectID  `json:"_id" bson:"_id"`
-	Email  string `json:"email" bson:"email"`
-	Name   string `json:"name" bson:"name"`
-	Active bool   `json:"active" bson:"active"`
+	ID     primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Email  string             `json:"email" bson:"email" binding:"required"`
+	Name   string             `json:"name" bson:"name"`
+	Active bool               `json:"active" bson:"active"`
 }
