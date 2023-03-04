@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"chicko_chat/models"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,16 +17,15 @@ type ChatDatabase struct {
 	Rooms *mongo.Collection
 }
 
-func (c *ChatDatabase) ConvertId(result *mongo.InsertOneResult)(primitive.ObjectID, error) {
+func (c *ChatDatabase) ConvertId(result *mongo.InsertOneResult) (primitive.ObjectID, error) {
 	if id, ok := result.InsertedID.(primitive.ObjectID); ok {
 		return id, nil
 	} else {
-	
-		return primitive.NilObjectID  , errors.New("failed vonverting")
+
+		return primitive.NilObjectID, errors.New("failed converting")
 	}
 
 }
-
 
 // Add user to the databse
 func (c *ChatDatabase) AddUser(user *data.UserData) (primitive.ObjectID, error) {
@@ -35,7 +33,7 @@ func (c *ChatDatabase) AddUser(user *data.UserData) (primitive.ObjectID, error) 
 	res, err := c.Users.InsertOne(context.TODO(), user)
 
 	if err != nil {
-		return primitive.NilObjectID , err
+		return primitive.NilObjectID, err
 	}
 
 	return c.ConvertId(res)
@@ -58,5 +56,40 @@ func (c *ChatDatabase) FindByEmail(email string) (*data.UserData, error) {
 	}
 
 	return &user, nil
+
+}
+
+func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
+
+	res, err := c.Rooms.InsertOne(context.TODO(), room)
+
+	if err != nil {
+		return room, err
+	}
+
+	room.ID, err = c.ConvertId(res)
+
+	if err != nil {
+		return room, err
+	}
+	return room, nil
+
+}
+
+func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData) (*data.ChatRoom, error) {
+	change := bson.M{
+		"$push": bson.M{
+			"users": user.ID,
+		},
+	}
+	filter := bson.M{
+		"_id": room.ID,
+	}
+	_, err := c.Rooms.UpdateOne(context.Background(), filter, change)
+	if err != nil {
+		return room, err
+	}
+	room.Clients = append(room.Clients, user.ID)
+	return room, nil
 
 }

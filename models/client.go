@@ -48,6 +48,7 @@ func (u *UserData) newClient(conn *websocket.Conn, user *UserData, ID string) *C
 	}
 	return client
 }
+
 func (client *Client) Read() {
 	defer func() {
 		client.disconnect()
