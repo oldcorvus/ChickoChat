@@ -30,6 +30,7 @@ func ConnectDatabseTest() *ChatDatabase {
 
 	db := &ChatDatabase{
 		Users: client.Database("chicko_chat").Collection("users_test"),
+		Rooms: client.Database("chicko_chat").Collection("rooms_test"),
 	}
 	defer func() {
 		if err = db.Users.Drop(context.TODO()); err != nil {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"testing"
+	"fmt"
 )
 
 func TestFindByEmail(t *testing.T) {
@@ -14,7 +15,6 @@ func TestFindByEmail(t *testing.T) {
 	if err == nil {
 		t.Fatalf("user found!")
 	}
-
 
 	//adding user to databse
 	db.Users.InsertOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
@@ -46,6 +46,26 @@ func TestAddUser(t *testing.T) {
 
 	if res != nil {
 		t.Fatalf("failure finding added user ")
+	}
+
+}
+
+func TestCreateRoom(t *testing.T) {
+	db := ConnectDatabseTest()
+	room := &data.ChatRoom{
+		Title: "Test",
+	}
+
+	_, err := db.CreateRoom(room)
+
+	if err != nil {
+		t.Fatalf("failure in adding room data to database")
+	}
+	var rm = data.ChatRoom{}
+	res := db.Rooms.FindOne(context.TODO(), bson.M{"title": room.Title}).Decode(&rm)
+
+	if res != nil {
+		t.Fatalf("failure finding added room ")
 	}
 
 }
