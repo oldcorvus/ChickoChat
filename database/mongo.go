@@ -1,9 +1,9 @@
 package database
 
 import (
+	"chicko_chat/models"
 	"context"
 	"errors"
-	"chicko_chat/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -85,11 +85,18 @@ func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData)
 	filter := bson.M{
 		"_id": room.ID,
 	}
+
 	_, err := c.Rooms.UpdateOne(context.Background(), filter, change)
 	if err != nil {
 		return room, err
 	}
-	room.Clients = append(room.Clients, user.ID)
-	return room, nil
+
+	rm := &data.ChatRoom{}
+	err = c.Rooms.FindOne(context.TODO(),filter).Decode(&rm)
+
+	if err != nil {
+		return room, err
+	}
+	return rm, nil
 
 }

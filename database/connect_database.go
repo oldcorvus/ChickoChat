@@ -1,6 +1,7 @@
 package database
 
 import (
+	"chicko_chat/models"
 	"context"
 	"log"
 	"time"
@@ -36,7 +37,20 @@ func ConnectDatabseTest() *ChatDatabase {
 		if err = db.Users.Drop(context.TODO()); err != nil {
 			log.Fatal(err)
 		}
+		if err = db.Rooms.Drop(context.TODO()); err != nil {
+			log.Fatal(err)
+		}
 	}()
+	room := &data.ChatRoom{
+		Title: "Data For Test",
+	}
+
+	_ , err = db.Rooms.InsertOne(context.TODO(),room )
+
+
+	if err != nil {
+		log.Fatal(err)
+	}
 	return db
 
 }

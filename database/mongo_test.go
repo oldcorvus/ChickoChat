@@ -4,11 +4,13 @@ import (
 	"chicko_chat/models"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
-	"fmt"
+
 )
 
 func TestFindByEmail(t *testing.T) {
+
 	db := ConnectDatabseTest()
 	//test for not existing email
 	_, err := db.FindByEmail("moelcrow@gmail.com")
@@ -23,12 +25,11 @@ func TestFindByEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error user not found")
 	}
-	// Delete record
-	db.Users.DeleteOne(context.TODO(), bson.M{"email": "moelcrow@gmail.com"})
 
 }
 
 func TestAddUser(t *testing.T) {
+
 	db := ConnectDatabseTest()
 	user := &data.UserData{
 		Email:  "testregister@gmail.com",
@@ -51,6 +52,7 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestCreateRoom(t *testing.T) {
+
 	db := ConnectDatabseTest()
 	room := &data.ChatRoom{
 		Title: "Test",
@@ -68,4 +70,37 @@ func TestCreateRoom(t *testing.T) {
 		t.Fatalf("failure finding added room ")
 	}
 
+}
+
+func TestAddClientToRoom(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	room := &data.ChatRoom{
+		Title:   "Data For Test",
+		Clients: make([]primitive.ObjectID, 0),
+	}
+
+	_, err := db.Rooms.InsertOne(context.TODO(), room)
+
+	err = db.Rooms.FindOne(context.TODO(), bson.M{"title": "Data For Test"}).Decode(&room)
+	if err != nil {
+		t.Fatalf("failure finding added room ")
+	}
+
+	user := &data.UserData{
+		Email:  "testregister@gmail.com",
+		Name:   "test user",
+		Active: true,
+	}
+	db.Users.InsertOne(context.TODO(), user)
+	err = db.Users.FindOne(context.TODO(), user).Decode(&user)
+	if err != nil {
+		t.Fatalf("failure finding added user ")
+
+	}
+	res, err := db.AddClientToRoom(room, user)
+	if res.Clients[0] != user.ID {
+		t.Fatalf("failure adding user into room ")
+
+	}
 }
