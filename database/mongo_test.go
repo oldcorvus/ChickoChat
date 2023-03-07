@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 
+
 )
 
 func TestFindByEmail(t *testing.T) {
@@ -103,4 +104,30 @@ func TestAddClientToRoom(t *testing.T) {
 		t.Fatalf("failure adding user into room ")
 
 	}
+}
+
+
+func TestAddMessage(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	message := &data.ChatEvent{
+		EventType : data.Broadcast,
+		UserID :    primitive.NewObjectID(),
+		RoomID :    primitive.NewObjectID(),
+		Message : "test message",
+
+	}
+
+	res , err := db.SaveMessage(message)
+
+	if err != nil {
+		t.Fatalf("failure in adding message data to databse")
+	}
+	msg := &data.ChatEvent{}
+	err = db.Messages.FindOne(context.TODO(), bson.M{"_id": res}).Decode(&msg)
+
+	if err != nil || msg.ID != res {
+		t.Fatalf("failure finding added message ")
+	}
+
 }

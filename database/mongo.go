@@ -101,31 +101,6 @@ func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData)
 
 }
 
-func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData) (*data.ChatRoom, error) {
-	change := bson.M{
-		"$push": bson.M{
-			"users": user.ID,
-		},
-	}
-	filter := bson.M{
-		"_id": room.ID,
-	}
-
-	_, err := c.Rooms.UpdateOne(context.Background(), filter, change)
-	if err != nil {
-		return room, err
-	}
-
-	rm := &data.ChatRoom{}
-	err = c.Rooms.FindOne(context.TODO(),filter).Decode(&rm)
-
-	if err != nil {
-		return room, err
-	}
-	return rm, nil
-
-}
-
 
 // Add message to the databse
 func (c *ChatDatabase) SaveMessage(message *data.ChatEvent) (primitive.ObjectID, error) {

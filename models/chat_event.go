@@ -17,9 +17,10 @@ const (
 
 // struct representing a message event in an  ChatRoom
 type ChatEvent struct {
-	EventType string             `json:"event_type,omitempty"`
-	UserID    primitive.ObjectID `json:"name,omitempty"`
+	ID        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	EventType string             `json:"type" bson:"type ,omitempty"`
+	UserID    primitive.ObjectID `json:"user_id,omitempty"`
 	RoomID    primitive.ObjectID `json:"room_id,omitempty"`
-	Message   string             `json:"msg,omitempty"`
-	Timestamp time.Time          `json:"time,omitempty"`
+	Message   string             `json:"message,omitempty"`
+	Timestamp time.Time          `json:"time"`
 }
