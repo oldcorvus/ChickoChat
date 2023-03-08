@@ -125,7 +125,7 @@ func (c *ChatDatabase) GetHistoryOfRoom(room *data.ChatRoom) ([]data.ChatEvent, 
 func (c *ChatDatabase) GetHistoryOfUser(user *data.UserData) ([]data.ChatRoom, error) {
 
 	findOptions := options.Find()
-    cur, err := c.Rooms.Find(context.TODO(), bson.M{"users": bson.M{"$in":user.ID}}, findOptions)
+    cur, err := c.Rooms.Find(context.TODO(), bson.M{"users": bson.M{"$in":[]primitive.ObjectID{user.ID}}}, findOptions)
     if err != nil {
         return nil, err
     }

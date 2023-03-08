@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
-
 )
 
 func TestFindByEmail(t *testing.T) {
@@ -105,19 +104,17 @@ func TestAddClientToRoom(t *testing.T) {
 	}
 }
 
-
 func TestAddMessage(t *testing.T) {
 
 	db := ConnectDatabseTest()
 	message := &data.ChatEvent{
-		EventType : data.Broadcast,
-		UserID :    primitive.NewObjectID(),
-		RoomID :    primitive.NewObjectID(),
-		Message : "test message",
-
+		EventType: data.Broadcast,
+		UserID:    primitive.NewObjectID(),
+		RoomID:    primitive.NewObjectID(),
+		Message:   "test message",
 	}
 
-	res , err := db.SaveMessage(message)
+	res, err := db.SaveMessage(message)
 
 	if err != nil {
 		t.Fatalf("failure in adding message data to databse")
@@ -134,28 +131,26 @@ func TestAddMessage(t *testing.T) {
 func TestGetHitoryOfRoom(t *testing.T) {
 
 	db := ConnectDatabseTest()
-	var messages  []interface{} 
-	id , err :=  primitive.ObjectIDFromHex("640778694829658eebc2d55b")
+	var messages []interface{}
+	id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55b")
 
-	room := &data.ChatRoom {
-		ID : id,
-		Title : "test",
+	room := &data.ChatRoom{
+		ID:    id,
+		Title: "test",
 	}
 
 	for i := 1; i < 5; i++ {
 		message := data.ChatEvent{
-			EventType : data.Broadcast,
-			UserID :    primitive.NewObjectID(),
-			RoomID :   id ,
-			Message : "test message" ,
-	
+			EventType: data.Broadcast,
+			UserID:    primitive.NewObjectID(),
+			RoomID:    id,
+			Message:   "test message",
 		}
 		message2 := data.ChatEvent{
-			EventType : data.Broadcast,
-			UserID :    primitive.NewObjectID(),
-			RoomID :    primitive.NewObjectID() ,
-			Message : "another room" ,
-	
+			EventType: data.Broadcast,
+			UserID:    primitive.NewObjectID(),
+			RoomID:    primitive.NewObjectID(),
+			Message:   "another room",
 		}
 		messages = append(messages, message)
 		messages = append(messages, message2)
@@ -166,10 +161,46 @@ func TestGetHitoryOfRoom(t *testing.T) {
 		t.Fatalf("failure in adding messages data to databse")
 	}
 	var result []data.ChatEvent
-	result , err = db.GetHistoryOfRoom(room)
+	result, err = db.GetHistoryOfRoom(room)
 	if err != nil || len(result) != 4 {
 		t.Fatalf("failure in retriveing messages data from databse")
 	}
 
+
+}
+
+func TestHistoryOfUser(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	var rooms []interface{}
+	id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55b")
+
+	user := &data.UserData{
+		ID:    id,
+		Email: "testuser@mail.com",
+	}
+
+	for i := 1; i < 5; i++ {
+		room := data.ChatRoom{
+			Title:   "test",
+			Clients: []primitive.ObjectID{id, primitive.NewObjectID()},
+		}
+		room2 := data.ChatRoom{
+			Title:   "test",
+			Clients: []primitive.ObjectID{primitive.NewObjectID(), primitive.NewObjectID()},
+		}
+		rooms = append(rooms, room)
+		rooms = append(rooms, room2)
+
+	}
+	_, err = db.Rooms.InsertMany(context.TODO(), rooms)
+	if err != nil {
+		t.Fatalf("failure in adding rooms data to databse")
+	}
+	var result []data.ChatRoom
+	result, err = db.GetHistoryOfUser(user)
+	if err != nil || len(result) != 4 {
+		t.Fatalf("failure in retriveing rooms data from databse")
+	}
 
 }
