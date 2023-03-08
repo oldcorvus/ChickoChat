@@ -18,17 +18,7 @@ type ChatDatabase struct {
 	Rooms *mongo.Collection
 }
 
-func (c *ChatDatabase) ConvertId(result *mongo.InsertOneResult) (primitive.ObjectID, error) {
-	if id, ok := result.InsertedID.(primitive.ObjectID); ok {
-		return id, nil
-	} else {
 
-		return primitive.NilObjectID, errors.New("failed converting")
-	}
-
-}
-
-// Add user to the databse
 func (c *ChatDatabase) AddUser(user *data.UserData) (primitive.ObjectID, error) {
 
 	res, err := c.Users.InsertOne(context.TODO(), user)
@@ -37,7 +27,7 @@ func (c *ChatDatabase) AddUser(user *data.UserData) (primitive.ObjectID, error) 
 		return primitive.NilObjectID, err
 	}
 
-	return c.ConvertId(res)
+	return convertId(res)
 
 }
 
@@ -68,7 +58,7 @@ func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 		return room, err
 	}
 
-	room.ID, err = c.ConvertId(res)
+	room.ID, err = convertId(res)
 
 	if err != nil {
 		return room, err
@@ -76,6 +66,7 @@ func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 	return room, nil
 
 }
+
 
 func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData) (*data.ChatRoom, error) {
 	change := bson.M{
@@ -102,8 +93,6 @@ func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData)
 
 }
 
-
-// Add message to the databse
 func (c *ChatDatabase) SaveMessage(message *data.ChatEvent) (primitive.ObjectID, error) {
 
 	res, err := c.Messages.InsertOne(context.TODO(), message)
@@ -112,11 +101,11 @@ func (c *ChatDatabase) SaveMessage(message *data.ChatEvent) (primitive.ObjectID,
 		return primitive.NilObjectID, err
 	}
 
-	return c.ConvertId(res)
+	return convertId(res)
 }
 
 
-// get history of chat from the databse
+// Get history of chat from the databse
 func (c *ChatDatabase) GetHistoryOfRoom(room *data.ChatRoom) ([]data.ChatEvent, error) {
 
 	findOptions := options.Find()
