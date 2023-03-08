@@ -1,11 +1,10 @@
 package database
 
 import (
-	"chicko_chat/models"
 	"context"
 	"log"
 	"time"
-
+	"chicko_chat/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -30,10 +29,9 @@ func ConnectDatabseTest() *ChatDatabase {
 	}
 
 	db := &ChatDatabase{
-		Users: client.Database("chicko_chat").Collection("users_test"),
-		Rooms: client.Database("chicko_chat").Collection("rooms_test"),
-		Messages : client.Database("chicko_chat").Collection("message_test"),
-
+		Users:    client.Database("chicko_chat").Collection("users_test"),
+		Rooms:    client.Database("chicko_chat").Collection("rooms_test"),
+		Messages: client.Database("chicko_chat").Collection("message_test"),
 	}
 	defer func() {
 		if err = db.Users.Drop(context.TODO()); err != nil {
@@ -42,13 +40,15 @@ func ConnectDatabseTest() *ChatDatabase {
 		if err = db.Rooms.Drop(context.TODO()); err != nil {
 			log.Fatal(err)
 		}
+		if err = db.Messages.Drop(context.TODO()); err != nil {
+			log.Fatal(err)
+		}
 	}()
 	room := &data.ChatRoom{
 		Title: "Data For Test",
 	}
 
-	_ , err = db.Rooms.InsertOne(context.TODO(),room )
-
+	_, err = db.Rooms.InsertOne(context.TODO(), room)
 
 	if err != nil {
 		log.Fatal(err)

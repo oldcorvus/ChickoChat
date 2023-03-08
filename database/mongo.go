@@ -116,16 +116,18 @@ func (c *ChatDatabase) SaveMessage(message *data.ChatEvent) (primitive.ObjectID,
 }
 
 
-// Add message to the databse
-func (c *ChatDatabase) GetHistoryOfRoom(room *data.ChatEvent) ([]*data.ChatEvent, error) {
+// get history of chat from the databse
+func (c *ChatDatabase) GetHistoryOfRoom(room *data.ChatRoom) ([]data.ChatEvent, error) {
 
-    findOptions := options.Find()
-    cur, err := c.Messages.Find(context.TODO(), bson.D{{"_id", room.ID}}, findOptions)
+	findOptions := options.Find()
+    cur, err := c.Messages.Find(context.TODO(), bson.D{{"roomid", room.ID}}, findOptions)
     if err != nil {
         return nil, err
     }
     defer cur.Close(context.TODO())
-    var messages []*data.ChatEvent
+
+    var messages []data.ChatEvent
     err = cur.All(context.TODO(), &messages)
+
     return messages, nil
 }

@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 
-
 )
 
 func TestFindByEmail(t *testing.T) {
@@ -129,5 +128,48 @@ func TestAddMessage(t *testing.T) {
 	if err != nil || msg.ID != res {
 		t.Fatalf("failure finding added message ")
 	}
+
+}
+
+func TestGetHitoryOfRoom(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	var messages  []interface{} 
+	id , err :=  primitive.ObjectIDFromHex("640778694829658eebc2d55b")
+
+	room := &data.ChatRoom {
+		ID : id,
+		Title : "test",
+	}
+
+	for i := 1; i < 5; i++ {
+		message := data.ChatEvent{
+			EventType : data.Broadcast,
+			UserID :    primitive.NewObjectID(),
+			RoomID :   id ,
+			Message : "test message" ,
+	
+		}
+		message2 := data.ChatEvent{
+			EventType : data.Broadcast,
+			UserID :    primitive.NewObjectID(),
+			RoomID :    primitive.NewObjectID() ,
+			Message : "another room" ,
+	
+		}
+		messages = append(messages, message)
+		messages = append(messages, message2)
+
+	}
+	_, err = db.Messages.InsertMany(context.TODO(), messages)
+	if err != nil {
+		t.Fatalf("failure in adding messages data to databse")
+	}
+	var result []data.ChatEvent
+	result , err = db.GetHistoryOfRoom(room)
+	if err != nil || len(result) != 4 {
+		t.Fatalf("failure in retriveing messages data from databse")
+	}
+
 
 }
