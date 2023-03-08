@@ -7,7 +7,7 @@ import (
 )
 
 
-
+// For converting result of insert document to  type primitive.ObjectID
 func  convertId(result *mongo.InsertOneResult) (primitive.ObjectID, error) {
 	if id, ok := result.InsertedID.(primitive.ObjectID); ok {
 		return id, nil

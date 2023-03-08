@@ -120,3 +120,20 @@ func (c *ChatDatabase) GetHistoryOfRoom(room *data.ChatRoom) ([]data.ChatEvent, 
 
     return messages, nil
 }
+
+// Get chat rooms of user
+func (c *ChatDatabase) GetHistoryOfUser(user *data.UserData) ([]data.ChatRoom, error) {
+
+	findOptions := options.Find()
+    cur, err := c.Rooms.Find(context.TODO(), bson.M{"users": bson.M{"$in":user.ID}}, findOptions)
+    if err != nil {
+        return nil, err
+    }
+    defer cur.Close(context.TODO())
+
+    var rooms []data.ChatRoom
+    err = cur.All(context.TODO(), &rooms)
+
+    return rooms, nil
+}
+
