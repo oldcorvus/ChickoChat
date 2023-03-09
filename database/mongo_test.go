@@ -204,3 +204,33 @@ func TestHistoryOfUser(t *testing.T) {
 	}
 
 }
+
+
+
+func TestGetUserData(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	var users []interface{}
+	ids := []primitive.ObjectID{}
+	for i := 1; i < 10; i++ {
+		user := data.UserData{
+			Email:   "test",
+			ID:  primitive.NewObjectID(),
+		}
+
+		users = append(users, user)
+		ids = append(ids, user.ID)
+
+	}
+	_, err := db.Users.InsertMany(context.TODO(), users)
+	if err != nil {
+		t.Fatalf("failure in adding user data to databse")
+	}
+	var result []data.UserData
+	
+	result, err = db.GetUserData(ids)
+	if err != nil || len(result) != 9 {
+		t.Fatalf("failure in retriveing user data from databse")
+	}
+
+}
