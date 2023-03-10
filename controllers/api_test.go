@@ -1,33 +1,31 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
+	"bytes"
+	"chicko_chat/database"
 	"chicko_chat/models"
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
-	"bytes"
 	"encoding/json"
-	"net/http"
-	"chicko_chat/database"
-	"net/http/httptest"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
-func SetUpRouter() *gin.Engine{
-    router := gin.Default()
-    return router
+func SetUpRouter() *gin.Engine {
+	router := gin.Default()
+	return router
 }
-
-
 
 func TestGetUserRooms(t *testing.T) {
 	db := database.ConnectDatabseTest()
 	controller := Controller{
 		DB: db,
 	}
-    r := SetUpRouter()
-    r.POST("/user-rooms/",controller.GetUserRooms) 
+	r := SetUpRouter()
+	r.POST("/user-rooms/", controller.GetUserRooms)
 
 	var rooms []interface{}
 	id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55b")
@@ -56,11 +54,20 @@ func TestGetUserRooms(t *testing.T) {
 		t.Fatalf("failure in retriveing rooms data from databse")
 	}
 
+	jsonValue, _ := json.Marshal(user)
+	req, _ := http.NewRequest("POST", "/user-rooms/", bytes.NewBuffer(jsonValue))
 
-    jsonValue, _ := json.Marshal(user)
-    req, _ := http.NewRequest("POST", "/user-rooms/", bytes.NewBuffer(jsonValue))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
 
-    w := httptest.NewRecorder()
-    r.ServeHTTP(w, req)
-    assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
+	// Convert the JSON response to a map
+	var response map[string][]data.ChatRoom
+	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	// Grab the value & whether or not it exists
+	value, exists := response["data"]
+	// Make some assertions on the correctness of the response.
+	assert.Nil(t, err)
+	assert.True(t, exists)
+	assert.Equal(t, value, result)
 }
