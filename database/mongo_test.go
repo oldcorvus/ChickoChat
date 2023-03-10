@@ -6,6 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
+	"github.com/stretchr/testify/assert"
+
 )
 
 func TestFindByEmail(t *testing.T) {
