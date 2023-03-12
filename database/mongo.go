@@ -68,10 +68,10 @@ func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 }
 
 
-func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom, user *data.UserData) (*data.ChatRoom, error) {
+func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 	change := bson.M{
 		"$push": bson.M{
-			"users": user.ID,
+			"users": room.Clients,
 		},
 	}
 	filter := bson.M{

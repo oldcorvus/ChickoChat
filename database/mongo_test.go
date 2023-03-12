@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
-	"github.com/stretchr/testify/assert"
 
 )
 
@@ -78,7 +77,7 @@ func TestAddClientToRoom(t *testing.T) {
 	db := ConnectDatabseTest()
 	room := &data.ChatRoom{
 		Title:   "Data For Test",
-		Clients: make([]primitive.ObjectID, 0),
+		Clients: []primitive.ObjectID{},
 	}
 
 	_, err := db.Rooms.InsertOne(context.TODO(), room)
@@ -99,7 +98,9 @@ func TestAddClientToRoom(t *testing.T) {
 		t.Fatalf("failure finding added user ")
 
 	}
-	res, err := db.AddClientToRoom(room, user)
+	room.Clients = append(room.Clients, user.ID)
+
+	res, err := db.AddClientToRoom(room)
 	if res.Clients[0] != user.ID {
 		t.Fatalf("failure adding user into room ")
 
