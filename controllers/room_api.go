@@ -43,4 +43,21 @@ func (c *Controller) RoomHistoryApi(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": messages})
 }
 
+func (c *Controller) AddUserToRoomApi(ctx *gin.Context) {
+	// Validate input
+	var room *data.ChatRoom
+	if err := ctx.ShouldBindJSON(&room); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	room, err := c.DB.AddClientToRoom(room)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": room})
+}
+
+
+
 
