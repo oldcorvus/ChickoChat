@@ -9,7 +9,7 @@ import (
 
 
 
-func (c *Controller) StartConversation(ctx *gin.Context) {
+func (c *Controller) StartConversationApi(ctx *gin.Context) {
 	// Validate input
 	var user *data.UserData
 	if err := ctx.ShouldBindJSON(&user); err != nil {

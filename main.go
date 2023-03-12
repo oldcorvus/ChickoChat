@@ -97,8 +97,9 @@ func main() {
 	controller := controllers.Controller{
 		DB: db,
 	}
-	router.POST("/start", controller.StartConversation) 
-	router.POST("/user-rooms/", controller.GetUserRooms) 
+	router.POST("/start", controller.StartConversationApi) 
+	router.POST("/user-rooms/", controller.GetUserRoomsApi) 
+	router.POST("/create-room/", controller.CreateRoomApi) 
 
 
 	router.Run()

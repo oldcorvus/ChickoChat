@@ -7,7 +7,7 @@ import (
 	"chicko_chat/models"
 )
 
-func (c *Controller) GetUserRooms(ctx *gin.Context) {
+func (c *Controller) GetUserRoomsApi(ctx *gin.Context) {
 	// Validate input
 	var user *data.UserData
 	if err := ctx.ShouldBindJSON(&user); err != nil {

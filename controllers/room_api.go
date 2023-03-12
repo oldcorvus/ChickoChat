@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *Controller) CreateRoom(ctx *gin.Context) {
+func (c *Controller) CreateRoomApi(ctx *gin.Context) {
 	// Validate input
 	var room *data.ChatRoom
 	if err := ctx.ShouldBindJSON(&room); err != nil {
