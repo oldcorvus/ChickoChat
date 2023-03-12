@@ -100,6 +100,7 @@ func main() {
 	router.POST("/start", controller.StartConversationApi) 
 	router.POST("/user-rooms/", controller.GetUserRoomsApi) 
 	router.POST("/create-room/", controller.CreateRoomApi) 
+	router.POST("/room-history/", controller.RoomHistoryApi)
 
 
 	router.Run()
