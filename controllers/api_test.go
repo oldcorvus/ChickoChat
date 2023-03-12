@@ -157,3 +157,68 @@ func TestRoomHistoryApi(t *testing.T) {
 	assert.Equal(t , value[0], messages[0])
 
 }
+
+
+func TestGetUserDetailsRoomApi(t *testing.T) {
+	db := database.ConnectDatabseTest()
+	controller := Controller{
+		DB: db,
+	}
+	r := SetUpRouter()
+	r.POST("/room-user-details/", controller.GetUserDetailsRoomApi)
+
+	id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55b")
+	user_id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55a")
+	user_id2, err := primitive.ObjectIDFromHex("640778694829658eebc2d55c")
+
+	user1 := &data.UserData{
+		ID: user_id,
+		Email: "test@gamil.com",
+	}
+
+	user2 := &data.UserData{
+		ID: user_id2,
+		Email: "test2@gamil.com",
+	}
+
+	room := &data.ChatRoom{
+		ID: id,
+		Title: "test",
+		Clients : []primitive.ObjectID{user_id, user_id2},
+	}
+
+
+
+
+	var users []interface{}
+
+	users = append(users, user1)
+	users = append(users, user2)
+
+	
+	_, err = db.Users.InsertMany(context.TODO(), users)
+	if err != nil {
+		t.Fatalf("failure in adding user data to databse")
+	}
+
+	jsonValue, _ := json.Marshal(room)
+	req, _ := http.NewRequest("POST", "/room-user-details/", bytes.NewBuffer(jsonValue))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	// Convert the JSON response to a map
+	var response map[string][]data.UserData
+	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	// Grab the value & whether or not it exists
+	value, exists := response["data"]
+	// Make some assertions on the correctness of the response.
+	assert.Nil(t, err)
+	assert.True(t, exists)
+	assert.Equal(t , value[0].ID, user1.ID)
+	assert.Equal(t , value[1].ID, user2.ID)
+	assert.Equal(t , value[0].Email, user1.Email)
+	assert.Equal(t , value[1].Email, user2.Email)
+
+}
