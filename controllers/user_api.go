@@ -18,10 +18,12 @@ func (c *Controller) GetUserRoomsApi(ctx *gin.Context) {
 	var rooms []data.ChatRoom
 	// Search For rooms
 	rooms, err := c.DB.GetHistoryOfUser(user)
-	if err == nil {
-		ctx.JSON(http.StatusOK, gin.H{"data": rooms})
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 
 	}
+	ctx.JSON(http.StatusOK, gin.H{"data": rooms})
+
 
 }
