@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
-
 )
 
 func TestFindByEmail(t *testing.T) {
@@ -101,8 +100,12 @@ func TestAddClientToRoom(t *testing.T) {
 	room.Clients = append(room.Clients, user.ID)
 
 	res, err := db.AddClientToRoom(room)
-	if res.Clients[0] != user.ID {
+	if err != nil {
 		t.Fatalf("failure adding user into room ")
+
+	}
+	if res.Clients[0] != user.ID {
+		t.Fatalf("incorect user data ")
 
 	}
 }
@@ -169,7 +172,6 @@ func TestGetHitoryOfRoom(t *testing.T) {
 		t.Fatalf("failure in retriveing messages data from databse")
 	}
 
-
 }
 
 func TestHistoryOfUser(t *testing.T) {
@@ -208,8 +210,6 @@ func TestHistoryOfUser(t *testing.T) {
 
 }
 
-
-
 func TestGetUserData(t *testing.T) {
 
 	db := ConnectDatabseTest()
@@ -217,8 +217,8 @@ func TestGetUserData(t *testing.T) {
 	ids := []primitive.ObjectID{}
 	for i := 1; i < 10; i++ {
 		user := data.UserData{
-			Email:   "test",
-			ID:  primitive.NewObjectID(),
+			Email: "test",
+			ID:    primitive.NewObjectID(),
 		}
 
 		users = append(users, user)
@@ -230,7 +230,7 @@ func TestGetUserData(t *testing.T) {
 		t.Fatalf("failure in adding user data to databse")
 	}
 	var result []data.UserData
-	
+
 	result, err = db.GetUserData(ids)
 	if err != nil || len(result) != 9 {
 		t.Fatalf("failure in retriveing user data from databse")

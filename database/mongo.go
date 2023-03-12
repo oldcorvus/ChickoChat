@@ -71,7 +71,7 @@ func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 	change := bson.M{
 		"$push": bson.M{
-			"users": room.Clients,
+			"users":  bson.M{"$each":room.Clients},
 		},
 	}
 	filter := bson.M{
@@ -80,14 +80,14 @@ func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom) (*data.ChatRoom, err
 
 	_, err := c.Rooms.UpdateOne(context.Background(), filter, change)
 	if err != nil {
-		return room, err
+		return nil, err
 	}
 
 	rm := &data.ChatRoom{}
 	err = c.Rooms.FindOne(context.TODO(),filter).Decode(&rm)
 
 	if err != nil {
-		return room, err
+		return nil, err
 	}
 	return rm, nil
 
