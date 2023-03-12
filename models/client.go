@@ -39,7 +39,7 @@ type UserData struct {
 	Active bool               `json:"active" bson:"active"`
 }
 
-func (u *UserData) newClient(conn *websocket.Conn, user *UserData, ID string) *Client {
+func (c *Client) newClient(conn *websocket.Conn, user *UserData) *Client {
 
 	client := &Client{
 		User: *user,
