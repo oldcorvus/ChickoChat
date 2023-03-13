@@ -82,22 +82,18 @@ func main() {
 		Rooms:    client.Database("chicko_chat").Collection("rooms"),
 	}
 
-	res, err := db.FindByEmail("moelcrow@gmail.com")
-	fmt.Println(err, res)
 
 	log.Printf("Database connection established")
 
-	r := NewRoom()
-	r.logger = logger.New(os.Stdout)
-
-	http.Handle("/", &templateHandler{filename: "chat.html"})
-	http.Handle("/room", r)
 
 	router := gin.Default()
 	controller := controllers.Controller{
 		DB: db,
 	}
-	websocketServer := &websocket.WsServer{}
+	websocketServer := &websocket.WsServer{
+		controller : controller,
+
+	}
 	router.POST("/start", controller.StartConversationApi) 
 	router.POST("/user-rooms/", controller.GetUserRoomsApi) 
 	router.POST("/create-room/", controller.CreateRoomApi) 
@@ -111,12 +107,6 @@ func main() {
 
 
 	router.Run()
-	go r.run()
 
-	// start the web server
-	log.Println("Starting web server on", *addr)
-	if err := http.ListenAndServe(*addr, nil); err != nil {
-		log.Fatal("ListenAndServe:", err)
-	}
 
 }
