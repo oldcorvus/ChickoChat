@@ -47,7 +47,7 @@ func  NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 	client := &Client{
 		User: *user,
 		Conn: conn,
-		Send: make(chan []byte, 256),
+		Send: make(chan ChatEvent),
 		Broker: broker ,
 
 	}
@@ -67,7 +67,7 @@ func (client *Client) Read() {
 	for {
 		var msg ChatEvent
 		// Read in a new message as JSON and map it to a Message object
-		msg, err := client.Conn.ReadJSON(&msg)
+		err := client.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("unexpected close error: %v", err)
@@ -84,4 +84,31 @@ func (client *Client) disconnect() {
 	close(client.Send)
 	client.Conn.Close()
 }
+
+func (client *Client) handleNewMessage(message *ChatEvent) {
+
+
+	switch message.EventType {
+	case Broadcast:
+		 client.Broker.Notification <- message
+
+	case Subscribe:
+		client.notifyJoined()
+
+	case Unsubscribe:
+
+	}
+
+}
+
+func (client *Client) notifyJoined() {
+	message := ChatEvent{
+		EventType: Subscribe,
+		RoomID: client.Broker.Room.ID,
+		UserID: client.User.ID,
+	}
+
+	client.Send <- message
+}
+
 
