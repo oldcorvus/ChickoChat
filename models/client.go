@@ -29,7 +29,7 @@ type Client struct {
 	// The websocket Connection.
 	Conn *websocket.Conn `json:"-"`
 	// Buffered channel of outbound messages.
-	Send chan ChatEvent `json:"-"`
+	Send chan *ChatEvent `json:"-"`
 	// Broker for connection
 	Broker *Broker
 }
@@ -46,7 +46,7 @@ func NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 	client := &Client{
 		User:   *user,
 		Conn:   conn,
-		Send:   make(chan ChatEvent),
+		Send:   make(chan *ChatEvent),
 		Broker: broker,
 	}
 	return client
@@ -132,7 +132,7 @@ func (client *Client) notifyJoined() {
 		UserID:    client.User.ID,
 	}
 
-	client.Send <- message
+	client.Send <- &message
 }
 
 func (client *Client) notifyLeft() {
@@ -142,5 +142,5 @@ func (client *Client) notifyLeft() {
 		UserID:    client.User.ID,
 	}
 
-	client.Send <- message
+	client.Send <- &message
 }
