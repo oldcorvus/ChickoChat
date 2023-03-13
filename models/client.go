@@ -78,3 +78,10 @@ func (client *Client) Read() {
 	}
 
 }
+
+
+func (client *Client) disconnect() {
+	close(client.Send)
+	client.Conn.Close()
+}
+
