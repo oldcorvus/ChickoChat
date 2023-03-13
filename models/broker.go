@@ -52,3 +52,10 @@ func (br *Broker) RunBroker() {
 
 	}
 }
+func (br *Broker) registerClient(client *Client) {
+	br.Clients[client] = true
+
+	log.Printf("Client added. %d registered Clients", len(br.Clients))
+
+}
+
