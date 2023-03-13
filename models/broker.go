@@ -15,7 +15,7 @@ type Broker struct {
 	Clients map[*Client]bool
 
 	// messages from the Clients.
-	Notification chan []byte
+	Notification chan *ChatEvent
 
 	// Register requests from the Clients.
 	Join chan *Client
@@ -26,9 +26,9 @@ type Broker struct {
 	Room *ChatRoom
 }
 
-func newBroker(room *ChatRoom) *Broker {
+func NewBroker(room *ChatRoom) *Broker {
 	return &Broker{
-		Notification: make(chan []byte),
+		Notification: make(chan *ChatEvent),
 		Join:         make(chan *Client),
 		Leave:        make(chan *Client),
 		Clients:      make(map[*Client]bool),
@@ -50,35 +50,5 @@ func (br *Broker) RunBroker() {
 			br.broadcastToClients(message)
 		}
 
-	}
-}
-func (br *Broker) registerClient(client *Client) {
-	br.Clients[client] = true
-	log.Printf("Client added. %d registered Clients", len(br.Clients))
-
-}
-
-func (br *Broker) unregisterClient(client *Client) {
-	if _, ok := br.Clients[client]; ok {
-		delete(br.Clients, client)
-		close(client.Send)
-	}
-
-	log.Printf("Removed client. %d registered Clients", len(br.Clients))
-
-}
-
-func (br *Broker) broadcastToClients(message []byte) {
-
-	for client := range br.Clients {
-		select {
-		case client.Send <- message:
-		case <-time.After(patience):
-			log.Print("Skipping client: " + client.User.Name)
-		default:
-			log.Print("Deleting client: " + client.User.Name)
-			close(client.Send)
-			delete(br.Clients, client)
-		}
 	}
 }
