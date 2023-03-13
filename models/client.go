@@ -111,4 +111,12 @@ func (client *Client) notifyJoined() {
 	client.Send <- message
 }
 
+func (client *Client) notifyLeft() {
+	message := ChatEvent{
+		EventType: Unsubscribe,
+		RoomID: client.Broker.Room.ID,
+		UserID: client.User.ID,
+	}
 
+	client.Send <- message
+}
