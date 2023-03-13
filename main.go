@@ -97,12 +97,17 @@ func main() {
 	controller := controllers.Controller{
 		DB: db,
 	}
+	websocketServer := &websocket.WsServer{}
 	router.POST("/start", controller.StartConversationApi) 
 	router.POST("/user-rooms/", controller.GetUserRoomsApi) 
 	router.POST("/create-room/", controller.CreateRoomApi) 
 	router.POST("/room-history/", controller.RoomHistoryApi)
 	router.POST("/add-user-room/", controller.AddUserToRoomApi)
-
+	router.GET("/ws/:roomId/:userId/", func(c *gin.Context) {
+		roomId := c.Param("roomId")
+		userId := c.Param("userId")
+		websocketServer.serveWs(c.Writer, c.Request, roomId, userId)
+	 })
 
 
 	router.Run()
