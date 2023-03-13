@@ -30,8 +30,8 @@ type Client struct {
 	// The websocket Connection.
 	Conn *websocket.Conn `json:"-"`
 	// Buffered channel of outbound messages.
-	Send chan *ChatEvent `json:"-"`
-	// Broker 
+	Send chan ChatEvent `json:"-"`
+	// Broker for connection
 	Broker *Broker
 }
 
@@ -48,9 +48,33 @@ func  NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 		User: *user,
 		Conn: conn,
 		Send: make(chan []byte, 256),
-		Broker: broker,
+		Broker: broker ,
 
 	}
 	return client
 }
 
+func (client *Client) Read() {
+	defer func() {
+		client.disconnect()
+	}()
+
+	client.Conn.SetReadLimit(maxMessageSize)
+	client.Conn.SetReadDeadline(time.Now().Add(pongWait))
+	client.Conn.SetPongHandler(func(string) error { client.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	// Start endless read loop, waiting for messages from client
+	for {
+		var msg ChatEvent
+		// Read in a new message as JSON and map it to a Message object
+		msg, err := client.Conn.ReadJSON(&msg)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("unexpected close error: %v", err)
+			}
+			break
+		}
+		// handel message
+	}
+
+}
