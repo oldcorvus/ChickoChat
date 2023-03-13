@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+
 const (
 	// Max wait time when writing message to peer
 	writeWait = 10 * time.Second
@@ -29,7 +30,9 @@ type Client struct {
 	// The websocket Connection.
 	Conn *websocket.Conn `json:"-"`
 	// Buffered channel of outbound messages.
-	Send chan []byte `json:"-"`
+	Send chan *ChatEvent `json:"-"`
+	// Broker 
+	Broker *Broker
 }
 
 type UserData struct {
@@ -39,40 +42,15 @@ type UserData struct {
 	Active bool               `json:"active" bson:"active"`
 }
 
-func (c *Client) newClient(conn *websocket.Conn, user *UserData) *Client {
+func  NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 
 	client := &Client{
 		User: *user,
 		Conn: conn,
 		Send: make(chan []byte, 256),
+		Broker: broker,
+
 	}
 	return client
 }
 
-func (client *Client) Read() {
-	defer func() {
-		client.disconnect()
-	}()
-
-	client.Conn.SetReadLimit(maxMessageSize)
-	client.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	client.Conn.SetPongHandler(func(string) error { client.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-
-	// Start endless read loop, waiting for messages from client
-	for {
-		_, jsonMessage, err := client.Conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("unexpected close error: %v", err)
-			}
-			break
-		}
-		_ = jsonMessage
-		//handel messages
-	}
-
-}
-func (client *Client) disconnect() {
-	close(client.Send)
-	client.Conn.Close()
-}
