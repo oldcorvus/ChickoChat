@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-
 const (
 	// Max wait time when writing message to peer
 	writeWait = 10 * time.Second
@@ -42,14 +41,13 @@ type UserData struct {
 	Active bool               `json:"active" bson:"active"`
 }
 
-func  NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
+func NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 
 	client := &Client{
-		User: *user,
-		Conn: conn,
-		Send: make(chan ChatEvent),
-		Broker: broker ,
-
+		User:   *user,
+		Conn:   conn,
+		Send:   make(chan ChatEvent),
+		Broker: broker,
 	}
 	return client
 }
@@ -79,6 +77,32 @@ func (client *Client) Read() {
 
 }
 
+func (client *Client) write() {
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		client.Conn.Close()
+	}()
+	for {
+		select {
+		case message, ok := <-client.Send:
+			client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				// The WsServer closed the channel.
+				client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			client.Conn.WriteJSON(message)
+
+		case <-ticker.C:
+			client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
+}
 
 func (client *Client) disconnect() {
 	close(client.Send)
@@ -87,15 +111,15 @@ func (client *Client) disconnect() {
 
 func (client *Client) handleNewMessage(message *ChatEvent) {
 
-
 	switch message.EventType {
 	case Broadcast:
-		 client.Broker.Notification <- message
+		client.Broker.Notification <- message
 
 	case Subscribe:
 		client.notifyJoined()
 
 	case Unsubscribe:
+		client.notifyLeft()
 
 	}
 
@@ -104,8 +128,8 @@ func (client *Client) handleNewMessage(message *ChatEvent) {
 func (client *Client) notifyJoined() {
 	message := ChatEvent{
 		EventType: Subscribe,
-		RoomID: client.Broker.Room.ID,
-		UserID: client.User.ID,
+		RoomID:    client.Broker.Room.ID,
+		UserID:    client.User.ID,
 	}
 
 	client.Send <- message
@@ -114,8 +138,8 @@ func (client *Client) notifyJoined() {
 func (client *Client) notifyLeft() {
 	message := ChatEvent{
 		EventType: Unsubscribe,
-		RoomID: client.Broker.Room.ID,
-		UserID: client.User.ID,
+		RoomID:    client.Broker.Room.ID,
+		UserID:    client.User.ID,
 	}
 
 	client.Send <- message
