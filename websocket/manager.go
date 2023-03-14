@@ -105,8 +105,7 @@ func (manager *clientManager) clientRead() {
 		var msg data.ChatEvent
 		// Read in a new message as JSON and map it to a Message object
 		err := manager.client.Conn.ReadJSON(&msg)
-		log.Printf("read message")
-		fmt.Println(msg)
+
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("unexpected close error: %v", err)
@@ -177,3 +176,12 @@ func (manager *clientManager) notifyJoined() {
 	manager.client.Send <- &message
 }
 
+func (manager *clientManager) notifyLeft() {
+	message := data.ChatEvent{
+		EventType: data.Unsubscribe,
+		RoomID:    manager.client.Broker.Room.ID,
+		UserID:    manager.client.User.ID,
+	}
+
+	manager.client.Send <- &message
+}
