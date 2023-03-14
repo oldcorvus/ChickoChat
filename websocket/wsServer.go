@@ -1,10 +1,13 @@
 package websocket
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"github.com/gorilla/websocket"
-	"log"
+	"chicko_chat/database"
 
+	"log"
+	"net/http"
+
+	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -15,58 +18,57 @@ const (
 var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize,
 	WriteBufferSize: socketBufferSize}
 
-
 type WsServer struct {
-	brokers      map[*data.Broker]bool
-	controller *Controller
-	
+	Manager *BrokerManager
 }
 
-
-func (server *WsServer) findBrokerbyRoomID(ID primitive.ObjectID) *Broker {
-	for broker := range server.brokers {
-		if broker.ChatRoom.ID == ID {
+func (server *WsServer) findBrokerbyRoomID(ID primitive.ObjectID) *data.Broker {
+	for broker := range server.Manager.Brokers {
+		if broker.Room.ID == ID {
 			return broker
 		}
 	}
-	return nil 
+	return nil
 }
 
-func (server *WsServer) createBroker(room *ChatRoom) *Broker {
-	broker := NewBroker(room)
-	go broker.RunBroker()
-	server.brokers[broker] = true
+func (server *WsServer) createBroker(room *data.ChatRoom) *data.Broker {
+	broker := data.NewBroker(room)
+	go server.Manager.RunBroker(broker)
+	server.Manager.Brokers[broker] = true
 
 	return broker
 }
 
-func (server *WsServer)  ServeWs(w http.ResponseWriter, req *http.Request, roomId string, userId string ) {
+func (server *WsServer) ServeWs(w http.ResponseWriter, req *http.Request, roomId string, userId string) {
 	socket, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
 		log.Fatal("ServeHTTP:", err)
 		return
 	}
-	roomId , err = data.ObjectIDFromHex()
-	userId , err = data.ObjectIDFromHex()
+	roomID, err := database.ObjectIDFromHex(roomId)
+	userID, err := database.ObjectIDFromHex(userId)
 
 	if err != nil {
 		return
 	}
 	user := &data.UserData{
-		ID : userId,
+		ID: userID,
 	}
 
 	room := &data.ChatRoom{
-		ID :roomId,
+		ID: roomID,
 	}
-	broker := server.findBrokerbyRoomID(room)
+	broker := server.findBrokerbyRoomID(room.ID)
 	if broker == nil {
 		server.createBroker(room)
 	}
-	client := data.newClient(socket, user, broker)
+	client := data.NewClient(socket, user, broker)
+	clientManager := clientManager{
+		client: client,
+	}
 	broker.Clients[client] = true
-	broker.join <- client
-	defer func() { broker.leave <- client }()
-	go client.write()
-	go client.read()
+	broker.Join <- client
+	defer func() { broker.Leave <- client }()
+	go clientManager.clientWrite()
+	go clientManager.clientRead()
 }
