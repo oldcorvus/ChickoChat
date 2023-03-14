@@ -119,3 +119,30 @@ func (manager *clientManager) clientRead() {
 
 }
 
+func (manager *clientManager) clientWrite() {
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		manager.client.Conn.Close()
+	}()
+	for {
+		select {
+		case message, ok := <-manager.client.Send:
+			manager.client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				// The WsServer closed the channel.
+				manager.client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			manager.client.Conn.WriteJSON(message)
+
+		case <-ticker.C:
+			manager.client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := manager.client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
+}
+
