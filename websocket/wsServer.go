@@ -5,7 +5,7 @@ import (
 
 	"log"
 	"net/http"
-
+	"chicko_chat/models"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
