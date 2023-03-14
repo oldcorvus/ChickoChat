@@ -61,3 +61,13 @@ func (manager *BrokerManager) registerClient(client *data.Client, broker *data.B
 
 }
 
+func (manager *BrokerManager) unregisterClient(client *data.Client, broker *data.Broker) {
+	if _, ok := broker.Clients[client]; ok {
+		delete(broker.Clients, client)
+		close(client.Send)
+	}
+
+	log.Printf("Removed client. %d registered Clients", len(broker.Clients))
+
+}
+
