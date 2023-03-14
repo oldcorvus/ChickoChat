@@ -3,19 +3,15 @@ package main
 import (
 	"chicko_chat/controllers"
 	"chicko_chat/database"
-	"chicko_chat/log"
+	"chicko_chat/websocket"
+	"chicko_chat/models"
+	"net/http"
 	"context"
 	"flag"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-
-	"path/filepath"
-	"sync"
-	"text/template"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,20 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// represents a single template
-type templateHandler struct {
-	once     sync.Once
-	filename string
-	templ    *template.Template
-}
 
-// ServeHTTP handles the HTTP request.
-func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
-	})
-	t.templ.Execute(w, r)
-}
 
 func main() {
 	var addr = flag.String("addr", ":8080", "The addr of the application.")
@@ -44,7 +27,7 @@ func main() {
 	mongoDatabase := flag.String("mongoDatabase", "chicko_chat", "Database name")
 	enableCredentials := flag.Bool("enableCredentials", false, "Enable the use of credentials for mongo connection")
 	flag.Parse()
-
+	_ = addr
 	_ = mongoDatabase
 	// Create mongo client configuration
 	co := options.Client().ApplyURI(*mongoURI)
@@ -90,11 +73,21 @@ func main() {
 	controller := controllers.Controller{
 		DB: db,
 	}
-	websocketServer := &websocket.WsServer{
-		controller : controller,
-
+	manager := &websocket.BrokerManager{
+		Brokers :      make(map[*data.Broker]bool),
+		DB : db,
 	}
-	router.POST("/start", controller.StartConversationApi) 
+	websocketServer := &websocket.WsServer{
+		Manager : manager,
+	}
+	router.LoadHTMLGlob("templates/*")
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "Sample Front",
+			"name" : "Moel",
+		})
+	})
+	router.POST("/start/", controller.StartConversationApi) 
 	router.POST("/user-rooms/", controller.GetUserRoomsApi) 
 	router.POST("/create-room/", controller.CreateRoomApi) 
 	router.POST("/room-history/", controller.RoomHistoryApi)
@@ -102,11 +95,11 @@ func main() {
 	router.GET("/ws/:roomId/:userId/", func(c *gin.Context) {
 		roomId := c.Param("roomId")
 		userId := c.Param("userId")
-		websocketServer.serveWs(c.Writer, c.Request, roomId, userId)
+		websocketServer.ServeWs(c.Writer, c.Request, roomId, userId)
 	 })
 
 
-	router.Run()
+	 router.Run()
 
 
 }
