@@ -36,3 +36,21 @@ type BrokerManager struct {
 type clientManager struct {
 	client *data.Client
 }
+
+// runs broker accepting various requests
+func (manager *BrokerManager) RunBroker(broker *data.Broker) {
+	for {
+		select {
+		case client := <-broker.Join:
+			manager.registerClient(client, broker)
+
+		case client := <-broker.Leave:
+			manager.unregisterClient(client, broker)
+
+		case message := <-broker.Notification:
+			manager.broadcastToClients(message, broker)
+		}
+
+	}
+}
+
