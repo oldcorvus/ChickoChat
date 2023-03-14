@@ -151,3 +151,19 @@ func (manager *clientManager) ClientDisconnect() {
 	manager.client.Conn.Close()
 }
 
+func (manager *clientManager) handleNewMessage(message *data.ChatEvent) {
+	fmt.Println(message)
+	switch message.EventType {
+	case data.Broadcast:
+		manager.client.Broker.Notification <- message
+
+	case data.Subscribe:
+		manager.notifyJoined()
+
+	case data.Unsubscribe:
+		manager.notifyLeft()
+
+	}
+
+}
+
