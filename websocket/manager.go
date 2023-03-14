@@ -33,3 +33,6 @@ type BrokerManager struct {
 	DB      *database.ChatDatabase
 }
 
+type clientManager struct {
+	client *data.Client
+}
