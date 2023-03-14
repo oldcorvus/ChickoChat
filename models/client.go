@@ -1,7 +1,6 @@
 package data
 
 import (
-	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -50,97 +49,4 @@ func NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 		Broker: broker,
 	}
 	return client
-}
-
-func (client *Client) Read() {
-	defer func() {
-		client.disconnect()
-	}()
-
-	client.Conn.SetReadLimit(maxMessageSize)
-	client.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	client.Conn.SetPongHandler(func(string) error { client.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-
-	// Start endless read loop, waiting for messages from client
-	for {
-		var msg ChatEvent
-		// Read in a new message as JSON and map it to a Message object
-		err := client.Conn.ReadJSON(&msg)
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("unexpected close error: %v", err)
-			}
-			break
-		}
-		// handel message
-	}
-
-}
-
-func (client *Client) write() {
-	ticker := time.NewTicker(pingPeriod)
-	defer func() {
-		ticker.Stop()
-		client.Conn.Close()
-	}()
-	for {
-		select {
-		case message, ok := <-client.Send:
-			client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if !ok {
-				// The WsServer closed the channel.
-				client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-
-			client.Conn.WriteJSON(message)
-
-		case <-ticker.C:
-			client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return
-			}
-		}
-	}
-}
-
-func (client *Client) disconnect() {
-	close(client.Send)
-	client.Conn.Close()
-}
-
-func (client *Client) handleNewMessage(message *ChatEvent) {
-
-	switch message.EventType {
-	case Broadcast:
-		client.Broker.Notification <- message
-
-	case Subscribe:
-		client.notifyJoined()
-
-	case Unsubscribe:
-		client.notifyLeft()
-
-	}
-
-}
-
-func (client *Client) notifyJoined() {
-	message := ChatEvent{
-		EventType: Subscribe,
-		RoomID:    client.Broker.Room.ID,
-		UserID:    client.User.ID,
-	}
-
-	client.Send <- &message
-}
-
-func (client *Client) notifyLeft() {
-	message := ChatEvent{
-		EventType: Unsubscribe,
-		RoomID:    client.Broker.Room.ID,
-		UserID:    client.User.ID,
-	}
-
-	client.Send <- &message
 }
