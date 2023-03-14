@@ -60,7 +60,7 @@ func (server *WsServer) ServeWs(w http.ResponseWriter, req *http.Request, roomId
 	}
 	broker := server.findBrokerbyRoomID(room.ID)
 	if broker == nil {
-		server.createBroker(room)
+		broker = server.createBroker(room)
 	}
 	client := data.NewClient(socket, user, broker)
 	clientManager := clientManager{
@@ -70,5 +70,5 @@ func (server *WsServer) ServeWs(w http.ResponseWriter, req *http.Request, roomId
 	broker.Join <- client
 	defer func() { broker.Leave <- client }()
 	go clientManager.clientWrite()
-	go clientManager.clientRead()
+	 clientManager.clientRead()
 }
