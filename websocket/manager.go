@@ -146,3 +146,8 @@ func (manager *clientManager) clientWrite() {
 	}
 }
 
+func (manager *clientManager) ClientDisconnect() {
+	close(manager.client.Send)
+	manager.client.Conn.Close()
+}
+
