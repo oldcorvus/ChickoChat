@@ -18,7 +18,7 @@ func  convertId(result *mongo.InsertOneResult) (primitive.ObjectID, error) {
 
 }
 
-func ObjectIDFromHex(hexString string) (primitive.ObjectID, error){
+func ObjectIDFromHex(hexString string) (ObjectID, error){
 	objID, err := primitive.ObjectIDFromHex(hexString)
 	return objID, err
 }
