@@ -1,13 +1,5 @@
 package data
 
-import (
-	"log"
-	"time"
-)
-
-// the amount of time to wait when pushing a message to
-// a slow client or a client that closed after `range Clients` started.
-const patience time.Duration = time.Second * 1
 
 // struct representing  client connections
 type Broker struct {
@@ -36,35 +28,3 @@ func NewBroker(room *ChatRoom) *Broker {
 	}
 }
 
-// runs broker accepting various requests
-func (br *Broker) RunBroker() {
-	for {
-		select {
-		case client := <-br.Join:
-			br.registerClient(client)
-
-		case client := <-br.Leave:
-			br.unregisterClient(client)
-
-		case message := <-br.Notification:
-			br.broadcastToClients(message)
-		}
-
-	}
-}
-func (br *Broker) registerClient(client *Client) {
-	br.Clients[client] = true
-
-	log.Printf("Client added. %d registered Clients", len(br.Clients))
-
-}
-
-func (br *Broker) unregisterClient(client *Client) {
-	if _, ok := br.Clients[client]; ok {
-		delete(br.Clients, client)
-		close(client.Send)
-	}
-
-	log.Printf("Removed client. %d registered Clients", len(br.Clients))
-
-}
