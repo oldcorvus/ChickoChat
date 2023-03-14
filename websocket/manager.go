@@ -91,3 +91,31 @@ func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker
 	}
 }
 
+func (manager *clientManager) clientRead() {
+	defer func() {
+		manager.ClientDisconnect()
+	}()
+
+	manager.client.Conn.SetReadLimit(maxMessageSize)
+	manager.client.Conn.SetReadDeadline(time.Now().Add(pongWait))
+	manager.client.Conn.SetPongHandler(func(string) error { manager.client.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	// Start endless read loop, waiting for messages from client
+	for {
+		var msg data.ChatEvent
+		// Read in a new message as JSON and map it to a Message object
+		err := manager.client.Conn.ReadJSON(&msg)
+		log.Printf("read message")
+		fmt.Println(msg)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("unexpected close error: %v", err)
+			}
+			break
+		}
+		// handel message
+		manager.handleNewMessage(&msg)
+	}
+
+}
+
