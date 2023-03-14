@@ -167,3 +167,13 @@ func (manager *clientManager) handleNewMessage(message *data.ChatEvent) {
 
 }
 
+func (manager *clientManager) notifyJoined() {
+	message := data.ChatEvent{
+		EventType: data.Subscribe,
+		RoomID:    manager.client.Broker.Room.ID,
+		UserID:    manager.client.User.ID,
+	}
+
+	manager.client.Send <- &message
+}
+
