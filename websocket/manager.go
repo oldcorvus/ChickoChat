@@ -71,3 +71,23 @@ func (manager *BrokerManager) unregisterClient(client *data.Client, broker *data
 
 }
 
+func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker *data.Broker) {
+	msg, err := manager.DB.SaveMessage(message)
+	if err != nil {
+		log.Print("message not sent: " + msg.Hex())
+
+	}
+	for client := range broker.Clients {
+		select {
+		case client.Send <- message:
+			log.Print("message sent to: " + client.User.Email)
+		case <-time.After(patience):
+			log.Print("Skipping client: " + client.User.Email)
+		default:
+			log.Print("Deleting client: " + client.User.Email)
+			close(client.Send)
+			delete(broker.Clients, client)
+		}
+	}
+}
+
