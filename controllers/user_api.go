@@ -42,7 +42,7 @@ func (c *Controller) GetUserDetailsRoomApi(ctx *gin.Context) {
 		return
 
 	}
-	ctx.JSON(http.StatusOK, gin.H{"data": users})
+	ctx.JSON(http.StatusOK, gin.H{"users": users})
 }
 
 
