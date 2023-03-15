@@ -1,0 +1,142 @@
+<html>
+  <head>
+    <title>{{.title}}</title>
+    <style>
+
+      input { display: block; }
+      ul    { list-style: none; }
+
+    </style>
+  </head>
+  <body>
+    {{.name}}
+    <p>Room ID  {{ .roomId}} </p>
+    <p id="title">room title  : {{ .room.Title}}</p>
+
+
+    <ul id="messages"></ul>
+    <form id="chatbox">
+      <textarea></textarea>
+      <input type="submit" value="Send" />
+    </form>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+      var users ;
+
+
+      $( function(e){
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:8080/room-user-details/",
+            data: JSON.stringify({
+                "_id" : {{.room.ID}},
+                "users" :{{.room.Clients}}
+
+            }),// now data come in this function
+            contentType: "application/json; charset=utf-8",
+            crossDomain: true,
+            dataType: "json",
+            success: function (data, status, jqXHR) {
+    
+                console.log(data)
+                users = data
+    
+            },
+            error: function (jqXHR, status) {
+                // error handler
+                console.log(jqXHR);
+                alert('fail' + status.code);
+            }
+        });
+      });
+
+      $(function(e){
+
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:8080/room-history/",
+            data: JSON.stringify({
+                "_id" : {{.roomId}},
+            }),// now data come in this function
+            contentType: "application/json; charset=utf-8",
+            crossDomain: true,
+            dataType: "json",
+            success: function (data, status, jqXHR) {
+              var messages = $("#messages");
+              for (var k in data.data) {
+                for (var key in users.users) {
+
+                  if (users.users[key]._id ==data.data[k].user_id ){
+
+                    messages.append($("<li>").text(users.users[key].email + " : " + data.data[k].message));
+                
+                  }
+                }
+              
+
+
+            }              
+    
+            },
+            error: function (jqXHR, status) {
+                // error handler
+                console.log(jqXHR);
+                alert('fail' + status.code);
+            }
+        });
+      }
+        )
+        $(function(){ 
+
+            var socket = null;
+            var msgBox = $("#chatbox textarea");
+            var messages = $("#messages");
+            var title = $("#title")
+            $("#chatbox").submit(function(){
+          
+              if (!msgBox.val()) return false;
+              if (!socket) {
+                alert("Error: There is no socket connection.");
+                return false;
+              }
+          
+              socket.send(JSON.stringify({
+                type : "send",
+                message: msgBox.val(),
+                user_id :{{ .userId }},
+                room_id : {{ .roomId }},
+                
+              }));
+            
+              msgBox.val("");
+              return false;
+          
+            });
+          
+            if (!window["WebSocket"]) {
+              alert("Error: Your browser does not support web sockets.")
+            } else {
+              socket = new WebSocket("ws://127.0.0.1:8080/ws/{{.roomId}}/{{.userId}}/");
+              socket.onclose = function() {
+                alert("Connection has been closed.");
+              }
+              socket.onmessage = function(e) {
+                for (var key in users.users) {
+
+                  var json = JSON.parse(e.data);
+                  if (users.users[key]._id ==json.user_id ){
+                    messages.append($("<li>").text(users.users[key].email + " : " +json.message));
+
+                  }
+                }
+              }
+            }
+          
+          });
+         
+    </script>
+
+       
+  </body>
+</html>
