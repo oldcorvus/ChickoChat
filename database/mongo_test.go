@@ -26,6 +26,25 @@ func TestFindByEmail(t *testing.T) {
 	}
 
 }
+func TestFindRoomByID(t *testing.T) {
+
+	db := ConnectDatabseTest()
+	id, err := primitive.ObjectIDFromHex("640778694829658eebc2d55d")
+
+	_, err = db.FindRoomByID(id)
+	if err == nil {
+		t.Fatalf("room found!")
+	}
+
+	//adding room to databse
+	db.Rooms.InsertOne(context.TODO(), bson.M{"_id": id})
+
+	_, err = db.FindRoomByID(id)
+	if err != nil {
+		t.Fatalf("error room not found")
+	}
+
+}
 
 func TestAddUser(t *testing.T) {
 

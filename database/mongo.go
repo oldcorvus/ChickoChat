@@ -50,10 +50,10 @@ func (c *ChatDatabase) FindByEmail(email string) (*data.UserData, error) {
 
 }
 
+
 func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 
-	res, er
-	r := c.Rooms.InsertOne(context.TODO(), room)
+	res, err := c.Rooms.InsertOne(context.TODO(), room)
 
 	if err != nil {
 		return room, err
@@ -155,11 +155,11 @@ func (c *ChatDatabase) GetUserData(ids []primitive.ObjectID) ([]data.UserData, e
 
 
 
-func (c *ChatDatabase) FindRoomByID(id primitive.ObjectID) (*data.Room, error) {
+func (c *ChatDatabase) FindRoomByID(id primitive.ObjectID) (*data.ChatRoom, error) {
 
 	// Find room by id 
 	var room = data.ChatRoom{}
-	err := c.Users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&room)
+	err := c.Rooms.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&room)
 
 	if err != nil {
 		// Checks if the room was not found
