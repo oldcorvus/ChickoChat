@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"chicko_chat/models"
+	"chicko_chat/database"
+
 	"time"
 )
 
@@ -58,6 +60,29 @@ func (c *Controller) AddUserToRoomApi(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": room})
 }
 
+
+
+func (c *Controller) JoinRoom(ctx *gin.Context) {
+	// Validate input
+	roomId := ctx.Query("roomId")
+	userId := ctx.Query("userId")
+	id , err := database.ObjectIDFromHex(roomId)
+
+	_ , err = c.DB.FindRoomByID(id )
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "room not found"})
+		return
+	}	
+
+	 ctx.HTML(http.StatusOK, "chat.tmpl", gin.H{
+		"title": "Sample Front",
+		"name":  "Moel",
+		"roomId" : roomId,
+		"userId": userId,
+	})
+	
+}
 
 
 
