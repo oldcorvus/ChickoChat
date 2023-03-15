@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <title>{{ .title }}</title>
+    <style>
+
+      input { display: block; }
+      ul    { list-style: none; }
+
+    </style>
+  </head>
+  <body>
+    {{.name}}
+
+    <ul >Please Enter your Email </ul>
+    <form id="chatbox">
+      <textarea></textarea>
+      <input type="submit" value="Send" />
+    </form>
+    <form id="createroom" >
+       <p> create new room</p> 
+        <textarea>title</textarea>
+        <input type="submit" value="Send" />
+      </form>
+      <form id="join" >
+        <p> enter room id to join</p> 
+         <textarea></textarea>
+         <input type="submit" value="Send" />
+       </form>
+    <p id="history">Your chat history</p>
+    <ul  id="rooms"></ul>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        var userId ;
+        var email ;
+
+
+        $("#createroom").hide()
+        $("#join").hide()
+        $(function(e){
+
+            var msgBox = $("#chatbox textarea");
+            var history = $("#history");
+            var rooms = $("#rooms");
+            $("#chatbox").submit(function(e){
+                email = msgBox.val();
+                e.preventDefault();
+                $.ajax({
+                            type: "POST",
+                            url: "http://127.0.0.1:8080/start/",
+                            data: JSON.stringify({
+                                "email" : msgBox.val()
+                            }),// now data come in this function
+                            contentType: "application/json; charset=utf-8",
+                            crossDomain: true,
+                            dataType: "json",
+                            success: function (data, status, jqXHR) {
+                                alert("success");// write success in " "
+                                userId = data.data._id;
+                                history.append($("<p>").text("your id :" + userId ));
+                                    $("#join").show()
+
+                                $.ajax({
+                                    type: "POST",
+                                    url: "http://127.0.0.1:8080/user-rooms/",
+                                    data: JSON.stringify({
+                                        "_id" : userId,
+                                        "email": email
+                                    }),// now data come in this function
+                                    contentType: "application/json; charset=utf-8",
+                                    crossDomain: true,
+                                    dataType: "json",
+                                    success: function (data, status, jqXHR) {
+                       
+                                        alert("success");// write success in " "
+                                        console.log(data)
+                                        for (var key in data.data) {
+
+                                            rooms.append($("<li>").text("id of room "+ data.data[key].title + " : "+ data.data[key]._id));
+
+                                        }
+                                            $("#createroom").show()
+
+                                    },
+                                    error: function (jqXHR, status) {
+                                        // error handler
+                                        console.log(jqXHR);
+                                        alert('fail' + status.code);
+                                    }
+                                });
+                       
+
+                            },
+               
+                            error: function (jqXHR, status) {
+                                // error handler
+                                console.log(jqXHR);
+                                alert('fail' + status.code);
+                            }
+                         });
+     });
+
+  });
+
+  $("#join").submit(function(e){
+    var msgBox = $("#join textarea");
+    var id = msgBox.val();
+    e.preventDefault();
+    console.log(id)
+    window.location.replace("http://127.0.0.1:8080/chat/?roomId="+id +"&userId="+userId 
+    );
+
+  });
+
+  $("#createroom").submit(function(e){
+    var rooms = $("#rooms");
+    var msgBox = $("#createroom textarea");
+    var title = msgBox.val();
+    e.preventDefault();
+    
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:8080/create-room/",
+        data: JSON.stringify({
+            "title" : title,
+            "users" : [userId]
+        }),// now data come in this function
+        contentType: "application/json; charset=utf-8",
+        crossDomain: true,
+        dataType: "json",
+        success: function (data, status, jqXHR) {
+
+            alert("success");// write success in " "
+            console.log(data)
+            rooms.append($("<li>").text("id of room "+ data.data.title + " : "+ data.data._id));
+
+        },
+        error: function (jqXHR, status) {
+            // error handler
+            console.log(jqXHR);
+            alert('fail' + status.code);
+        }
+    });
+  });
+
+  
+    </script>
+       
+  </body>
+</html>
