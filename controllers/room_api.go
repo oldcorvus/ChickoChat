@@ -96,6 +96,7 @@ func (c *Controller) JoinRoom(ctx *gin.Context) {
 		"title": "Sample Front",
 		"name":  "Moel",
 		"roomId" : roomId,
+		"room" : room,
 		"userId": userId,
 	})
 	
