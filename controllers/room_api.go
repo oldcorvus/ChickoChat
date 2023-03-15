@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"chicko_chat/models"
 	"chicko_chat/database"
-
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
@@ -64,11 +64,28 @@ func (c *Controller) AddUserToRoomApi(ctx *gin.Context) {
 
 func (c *Controller) JoinRoom(ctx *gin.Context) {
 	// Validate input
+	var room *data.ChatRoom
 	roomId := ctx.Query("roomId")
 	userId := ctx.Query("userId")
 	id , err := database.ObjectIDFromHex(roomId)
-
-	_ , err = c.DB.FindRoomByID(id )
+	userID, err := database.ObjectIDFromHex(userId)
+	room , err = c.DB.FindRoomByID(id )
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "room not found"})
+		return
+	}	
+	var  found bool = false
+	for i := range room.Clients {
+		if room.Clients[i] == userID {
+			found = true
+		}
+	}
+	if found != true {
+		room , err = c.DB.AddClientToRoom(&data.ChatRoom{
+			ID : id,
+			Clients : []primitive.ObjectID{userID},
+		})
+	}
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "room not found"})
