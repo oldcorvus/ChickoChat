@@ -19,7 +19,17 @@ func (c *Controller) StartConversationApi(ctx *gin.Context) {
 
 	// Search For existing user
 	usr, err := c.DB.FindByEmail(user.Email)
-	if err == nil {
+	if err == nil{
+		if usr.Name == "" {
+			usr.Name = user.Name
+			usr , err = c.DB.UpdateUserName(usr)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			
+		}
+		
 		ctx.JSON(http.StatusOK, gin.H{"data": usr})
 		return
 
