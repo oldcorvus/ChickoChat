@@ -13,11 +13,11 @@ import (
 )
 
 func main() {
-	mongoURI := flag.String("mongoURI", "mongodb://localhost:27017", "Database hostname url")
+	mongoURI := flag.String("mongoURI", "mongodb://mongo:27017", "Database hostname url")
 	enableCredentials := flag.Bool("enableCredentials", false, "Enable the use of credentials for mongo connection")
 	flag.Parse()
 
-	db:= database.ConnectDatabse(*mongoURI, *enableCredentials )
+	db := database.ConnectDatabse(*mongoURI, *enableCredentials)
 	router := gin.Default()
 	controller := controllers.Controller{
 		DB: db,
