@@ -69,6 +69,22 @@ func (c *ChatDatabase) CreateRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 }
 
 
+func (c *ChatDatabase) UpdateUserName(user *data.UserData) (*data.UserData, error) {
+	filter := bson.D{{"_id", user.ID}}
+	update := bson.D{{"$set", bson.D{{"name",user.Name}}}}
+	_, err := c.Users.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+			return nil, err
+	}
+	usr := &data.UserData{}
+	err = c.Users.FindOne(context.TODO(),filter).Decode(&usr)
+
+	if err != nil {
+		return nil, err
+	}
+	return usr, nil
+}
+
 func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom) (*data.ChatRoom, error) {
 	change := bson.M{
 		"$push": bson.M{
