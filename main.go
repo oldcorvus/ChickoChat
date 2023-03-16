@@ -5,6 +5,7 @@ import (
 	"chicko_chat/database"
 	"chicko_chat/models"
 	"chicko_chat/websocket"
+	 "github.com/gin-contrib/cors"
 
 	"flag"
 	"net/http"
@@ -37,6 +38,7 @@ func main() {
 			"name":  "Moel",
 		})
 	})
+	router.Use(cors.Default())
 	router.GET("/chat/", controller.JoinRoom)
 	router.POST("/start/", controller.StartConversationApi)
 	router.POST("/user-rooms/", controller.GetUserRoomsApi)

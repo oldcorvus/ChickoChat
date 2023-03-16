@@ -1,7 +1,7 @@
 # Chicko Chat
 
 
-Chicko chat is a real time multi room multi user chat using golang, websocket , mongodb with restfull api
+Chicko chat is a real time multi room multi user chat using golang, websocket , mongodb with restful api
 
 
 
