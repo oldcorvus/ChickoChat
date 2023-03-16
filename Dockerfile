@@ -8,10 +8,10 @@ COPY . .
 
 # Build the Go app
 RUN GOPROXY=https://goproxy.cn go get github.com/klauspost/compress
-RUN go build -o main .
+RUN go build -o chat .
 
 # Expose port 8080 to the outside world
 EXPOSE 8009
 
 # Command to run the executable
-CMD ["./main"]
+CMD ["./chat"]
