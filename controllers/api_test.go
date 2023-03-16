@@ -206,10 +206,11 @@ func TestGetUserDetailsRoomApi(t *testing.T) {
 	var response map[string][]data.UserData
 	err = json.Unmarshal([]byte(w.Body.String()), &response)
 	// Grab the value & whether or not it exists
-	value, exists := response["data"]
+	value, exists := response["users"]
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
 	assert.True(t, exists)
+
 	assert.Equal(t, value[0].ID, user1.ID)
 	assert.Equal(t, value[1].ID, user2.ID)
 	assert.Equal(t, value[0].Email, user1.Email)

@@ -51,6 +51,26 @@ And navigate to `http://127.0.0.1:8080/`.
   * `POST /add-user-room/`: to register user in room
   * `POST /room-user-details/`: to retrieve user data of a room
 
+## Test ##
 
+to run tests 
 
-  
+Controllers :
+```sh
+ $ cd controllers 
+
+```
+```sh
+$ go test
+
+```
+Database 
+
+```sh
+ $ cd database 
+
+```
+```sh
+$ go test
+
+```
