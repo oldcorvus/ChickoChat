@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type ChatDatabase struct {
@@ -111,6 +112,7 @@ func (c *ChatDatabase) AddClientToRoom(room *data.ChatRoom) (*data.ChatRoom, err
 }
 
 func (c *ChatDatabase) SaveMessage(message *data.ChatEvent) (primitive.ObjectID, error) {
+	message.Timestamp = time.Now()
 
 	res, err := c.Messages.InsertOne(context.TODO(), message)
 
