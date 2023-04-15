@@ -16,7 +16,11 @@ const (
 )
 
 var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize,
-	WriteBufferSize: socketBufferSize}
+	WriteBufferSize: socketBufferSize,
+	CheckOrigin: func(r *http.Request) bool {
+		//origin := r.Header.Get("Origin")
+		return true
+	},}
 
 type WsServer struct {
 	Manager *BrokerManager
