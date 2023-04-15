@@ -72,6 +72,7 @@ func (manager *BrokerManager) unregisterClient(client *data.Client, broker *data
 }
 
 func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker *data.Broker) {
+	message.Timestamp = time.Now()
 	msg, err := manager.DB.SaveMessage(message)
 	if err != nil {
 		log.Print("message not sent: " + msg.Hex())
@@ -80,11 +81,11 @@ func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker
 	for client := range broker.Clients {
 		select {
 		case client.Send <- message:
-			log.Print("message sent to: " + client.User.Email)
+			log.Print("message sent to: " + client.User.ID.Hex())
 		case <-time.After(patience):
-			log.Print("Skipping client: " + client.User.Email)
+			log.Print("Skipping client: " + client.User.ID.Hex())
 		default:
-			log.Print("Deleting client: " + client.User.Email)
+			log.Print("Deleting client: " + client.User.ID.Hex())
 			close(client.Send)
 			delete(broker.Clients, client)
 		}

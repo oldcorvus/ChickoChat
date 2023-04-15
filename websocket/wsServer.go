@@ -70,5 +70,5 @@ func (server *WsServer) ServeWs(w http.ResponseWriter, req *http.Request, roomId
 	broker.Join <- client
 	defer func() { broker.Leave <- client }()
 	go clientManager.clientWrite()
-	 clientManager.clientRead()
+	clientManager.clientRead()
 }
