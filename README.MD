@@ -3,10 +3,10 @@
 
 Chicko chat is a real time multi room multi user chat using golang, websocket , mongodb with restful api
 
-## Sample Front ##
-```
-https://github.com/younes-nb/chicko-frontend
-```
+[Sample Front]
+
+(https://github.com/younes-nb/chicko-frontend)
+
 
 
 ## Install ##
