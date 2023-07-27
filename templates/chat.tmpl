@@ -125,8 +125,21 @@
                 for (var key in users.users) {
 
                   var json = JSON.parse(e.data);
+                  console.log(json)
                   if (users.users[key]._id ==json.user_id ){
-                    messages.append($("<li>").text(users.users[key].email + " : " +json.message));
+                    if (json.type == "send"){
+                      messages.append($("<li>").text(users.users[key].email + " : " +json.message));
+
+                    }
+                    else if (json.type == "join")
+                    {
+                      messages.append($("<li>").text(users.users[key].email + " : " +"joined"));
+
+                    }
+                    else{
+                      messages.append($("<li>").text(users.users[key].email + " : " +"left"));
+ 
+                    }
 
                   }
                 }

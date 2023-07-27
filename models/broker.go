@@ -1,5 +1,6 @@
 package data
 
+import "sync"
 
 // struct representing  client connections
 type Broker struct {
@@ -16,15 +17,16 @@ type Broker struct {
 	Leave chan *Client
 
 	Room *ChatRoom
+
+	Mutex sync.Mutex
 }
 
 func NewBroker(room *ChatRoom) *Broker {
 	return &Broker{
-		Notification: make(chan *ChatEvent),
+		Notification: make(chan *ChatEvent, 100),
 		Join:         make(chan *Client),
 		Leave:        make(chan *Client),
 		Clients:      make(map[*Client]bool),
 		Room:         room,
 	}
 }
-

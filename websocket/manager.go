@@ -2,12 +2,13 @@ package websocket
 
 import (
 	"chicko_chat/database"
+	data "chicko_chat/models"
 	"log"
-	"chicko_chat/models"
 
-	"github.com/gorilla/websocket"
 	"fmt"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -55,17 +56,34 @@ func (manager *BrokerManager) RunBroker(broker *data.Broker) {
 }
 
 func (manager *BrokerManager) registerClient(client *data.Client, broker *data.Broker) {
+	broker.Mutex.Lock()
 	broker.Clients[client] = true
+	broker.Mutex.Unlock()
+	message := data.ChatEvent{
+		EventType: data.Subscribe,
+		RoomID:    broker.Room.ID,
+		UserID:    client.User.ID,
+	}
+	broker.Notification <- &message
 
 	log.Printf("Client added. %d registered Clients", len(broker.Clients))
 
 }
 
 func (manager *BrokerManager) unregisterClient(client *data.Client, broker *data.Broker) {
+	broker.Mutex.Lock()
 	if _, ok := broker.Clients[client]; ok {
 		delete(broker.Clients, client)
 		close(client.Send)
 	}
+	broker.Mutex.Unlock()
+
+	message := data.ChatEvent{
+		EventType: data.Unsubscribe,
+		RoomID:    broker.Room.ID,
+		UserID:    client.User.ID,
+	}
+	broker.Notification <- &message
 
 	log.Printf("Removed client. %d registered Clients", len(broker.Clients))
 
@@ -78,6 +96,8 @@ func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker
 		log.Print("message not sent: " + msg.Hex())
 
 	}
+	broker.Mutex.Lock()
+
 	for client := range broker.Clients {
 		select {
 		case client.Send <- message:
@@ -90,6 +110,8 @@ func (manager *BrokerManager) broadcastToClients(message *data.ChatEvent, broker
 			delete(broker.Clients, client)
 		}
 	}
+	broker.Mutex.Unlock()
+
 }
 
 func (manager *clientManager) clientRead() {
@@ -156,32 +178,14 @@ func (manager *clientManager) handleNewMessage(message *data.ChatEvent) {
 	case data.Broadcast:
 		manager.client.Broker.Notification <- message
 
-	case data.Subscribe:
-		manager.notifyJoined()
-
-	case data.Unsubscribe:
-		manager.notifyLeft()
+	case data.Subscribe, data.Unsubscribe:
+		manager.notifyJoinedLeft(message)
 
 	}
 
 }
 
-func (manager *clientManager) notifyJoined() {
-	message := data.ChatEvent{
-		EventType: data.Subscribe,
-		RoomID:    manager.client.Broker.Room.ID,
-		UserID:    manager.client.User.ID,
-	}
+func (manager *clientManager) notifyJoinedLeft(message *data.ChatEvent) {
 
-	manager.client.Send <- &message
-}
-
-func (manager *clientManager) notifyLeft() {
-	message := data.ChatEvent{
-		EventType: data.Unsubscribe,
-		RoomID:    manager.client.Broker.Room.ID,
-		UserID:    manager.client.User.ID,
-	}
-
-	manager.client.Send <- &message
+	manager.client.Send <- message
 }

@@ -45,7 +45,7 @@ func NewClient(conn *websocket.Conn, user *UserData, broker *Broker) *Client {
 	client := &Client{
 		User:   *user,
 		Conn:   conn,
-		Send:   make(chan *ChatEvent),
+		Send:   make(chan *ChatEvent, 100),
 		Broker: broker,
 	}
 	return client
